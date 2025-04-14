@@ -21,17 +21,17 @@ npm i color-picker-webgl
 <div id="parent" style="display: flex"></div>
 <script type="module">
   import ColorPicker from './index.js';
-  const colorPicker = new ColorPicker(400);
+  const colorPicker = new ColorPicker(320);
   const parent = document.querySelector('#parent');
   const show = document.querySelector('#show-color');
   const black = document.querySelector('#black');
   parent.appendChild(colorPicker.canvas);
-  colorPicker.render();
+  colorPicker.install();
   const update = () => {
-    const hsb = colorPicker.hsb
+    const { hsb } = colorPicker
     const rgb = hsbToRgb(hsb[0], hsb[1], hsb[2])
     black.style.backgroundColor = show.textContent = `rgb(${rgb[0]},${rgb[1]},${rgb[2]})`
-    requestIdleCallback(update)
+    requestAnimationFrame(update)
   }
   update();
   function hsbToRgb(h, s, b) {
@@ -62,11 +62,8 @@ hsb属性是一个数组,包含当前颜色盘所在位置映射的 hsb 值
 ### setUniformData(key: keyof UniformData, value: number)
 设置uniform数据,包含颜色盘的明度信息和按钮大小等
 
-### render()
+### install()
 渲染颜色盘,本质是 requestAnimationFrame 的循环调用,事件的注册也在这里,如果是用 Vue 等框架,可以直接在组件挂载时调用 render 方法,在组件销毁时调用 unmounted 方法
 
-### stopRender()
-停止渲染颜色盘,requestAnimationFrame 的停止
-
-### unmounted()
+### uninstall()
 调用 cancelAnimationFrame 停止 requestAnimationFrame 并清除事件监听
