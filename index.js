@@ -9,7 +9,7 @@ var ColorPicker = (function () {
         this.uniformData = {
             brightness: 1.0,
             btnSize: 0.06667,
-            btnStrokeWidth: 0.005,
+            btnStrokeWidth: 0.008,
             lineStrokeWidth: 0.004
         };
         this.uniformLocation = {
@@ -18,7 +18,7 @@ var ColorPicker = (function () {
             btnStrokeWidth: 0,
             lineStrokeWidth: 0
         };
-        var tmp = this.canvas.getContext('webgl');
+        var tmp = this.canvas.getContext('webgl', { antialias: true });
         if (tmp === null) {
             throw new Error('WebGL2 is not supported by your browser');
         }
@@ -66,7 +66,7 @@ var ColorPicker = (function () {
         if (fragmentShader === null) {
             throw new Error('Create Fragment Shader return null');
         }
-        gl.shaderSource(fragmentShader, "precision mediump float;\nconst float PI = acos(-1.0);\nconst float FULL_CIRCLE_RADIANS = 2.0 * PI;\nvec4 line(vec2 ndc, vec2 sPos, vec2 ePos, float w, vec3 color)\n{\n  vec2 dir = normalize(ePos - sPos);\n  vec2 perpDir = vec2(-dir.y, dir.x);\n  float d = abs(dot(ndc - sPos, perpDir));\n  float l = dot(ndc - sPos, dir);\n  float insidePerpendicular = smoothstep(w + 0.001, w - 0.001, d);\n  float insideSegment = step(l, length(ePos - sPos)) * step(0.0, l);\n  float t = insidePerpendicular * insideSegment;\n  return mix(vec4(color, t), vec4(0.0), step(t, 0.0));\n}\nvec4 fCircle(vec2 ndc, vec3 color, float radius, vec2 pos)\n{\n  float t = smoothstep(radius, radius - 0.001, length(ndc - pos));\n  return vec4(color, t);\n}\nvec4 sCircle(vec2 ndc, vec3 color, float radius, float stroke, vec2 pos)\n{\n  float len = length(ndc - pos);\n  float r1 = radius - stroke;\n  float r2 = radius + stroke;\n  float t = smoothstep(r1, r1 + 0.001, len) - smoothstep(r2, r2 + 0.001, len);\n  return mix(vec4(color, t), vec4(0.0), step(t, 0.0));\n}\nvec4 circle(vec2 ndc, vec3 fillColor, vec3 strokeColor, float strokeWidth, float radius, vec2 pos)\n{\n  vec4 stroke = sCircle(ndc, strokeColor, radius, strokeWidth, pos);\n  return mix(fCircle(ndc, fillColor, radius, pos), stroke, stroke.a);\n}\nvec3 hsvToRgb(float h, float s, float v)\n{\n  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n  vec3 p = abs(fract(vec3(h) + K.xyz) * 6.0 - K.w);\n  return v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s);\n}\nfloat linear(float t, float tMin, float tMax)\n{\n  return tMin * (1.0 - t) + tMax * t;\n}\nvec3 getColorFromPoint(vec2 point, float brig)\n{\n  float radius = length(point);\n  if (radius > 1.0)\n  {\n    return vec3(0.0);\n  }\n  float hue = atan(point.y, point.x) / FULL_CIRCLE_RADIANS; // Convert to range [0, 1]\n  float saturation = radius;\n  float value = 1.0;\n  return hsvToRgb(hue, saturation, value);\n}\nvoid calculateColor(vec4 data[3], out vec4 result) {\n    result = vec4(0.0);\n    for (int i = 0; i < 3; i++) {\n        vec4 c = data[i];\n        result = mix(result, c, c.a);\n    }\n}\nuniform vec2 u_resolution;\nuniform vec2 u_position;\nuniform float u_brightness;\nuniform float u_btnSize;\nuniform float u_btnStrokeWidth;\nuniform float u_lineStrokeWidth;\nvoid main() {\n    vec2 uv = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;\n    vec4 data[3];\n    vec3 strokeColor = vec3(1.0);\n    vec3 rgb = hsvToRgb((atan(uv.y, uv.x)) / FULL_CIRCLE_RADIANS, length(uv), 1.0);\n    float scale = 1.0 - u_btnSize - u_btnStrokeWidth;\n    data[0] = fCircle(uv, rgb, scale, vec2(0.0, 0.0));\n    data[1] = line(uv, vec2(0.0), u_position - u_position * u_btnSize, u_lineStrokeWidth, strokeColor);\n    data[2] = circle(uv, getColorFromPoint(u_position, u_brightness), strokeColor, u_btnStrokeWidth, u_btnSize, u_position * scale);\n    calculateColor(data, gl_FragColor);\n}");
+        gl.shaderSource(fragmentShader, "precision mediump float;\nconst float PI = acos(-1.0);\nconst float FULL_CIRCLE_RADIANS = 2.0 * PI;\nvec4 line(vec2 ndc, vec2 sPos, vec2 ePos, float w, vec3 color)\n{\n  vec2 dir = normalize(ePos - sPos);\n  vec2 perpDir = vec2(-dir.y, dir.x);\n  float d = abs(dot(ndc - sPos, perpDir));\n  float l = dot(ndc - sPos, dir);\n  float insidePerpendicular = smoothstep(w + 0.005, w - 0.005, d);\n  float insideSegment = step(l, length(ePos - sPos)) * step(0.0, l);\n  float t = insidePerpendicular * insideSegment;\n  return mix(vec4(color, t), vec4(0.0), step(t, 0.0));\n}\nvec4 fCircle(vec2 ndc, vec3 color, float radius, vec2 pos)\n{\n  float t = smoothstep(radius, radius - 0.01, length(ndc - pos));\n  return vec4(color, t);\n}\nvec4 sCircle(vec2 ndc, vec3 color, float radius, float stroke, vec2 pos)\n{\n  float len = length(ndc - pos);\n  float r1 = radius - stroke;\n  float r2 = radius + stroke;\n  float t = smoothstep(r1, r1 + 0.01, len) - smoothstep(r2, r2 + 0.01, len);\n  return mix(vec4(color, t), vec4(0.0), step(t, 0.0));\n}\nvec4 circle(vec2 ndc, vec3 fillColor, vec3 strokeColor, float strokeWidth, float radius, vec2 pos)\n{\n  vec4 stroke = sCircle(ndc, strokeColor, radius, strokeWidth, pos);\n  return mix(fCircle(ndc, fillColor, radius, pos), stroke, stroke.a);\n}\nvec3 hsvToRgb(float h, float s, float v)\n{\n  vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n  vec3 p = abs(fract(vec3(h) + K.xyz) * 6.0 - K.w);\n  return v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), s);\n}\nfloat linear(float t, float tMin, float tMax)\n{\n  return tMin * (1.0 - t) + tMax * t;\n}\nvec3 getColorFromPoint(vec2 point, float brig)\n{\n  float radius = length(point);\n  if (radius > 1.0)\n  {\n    return vec3(0.0);\n  }\n  float hue = atan(point.y, point.x) / FULL_CIRCLE_RADIANS; // Convert to range [0, 1]\n  float saturation = radius;\n  float value = 1.0;\n  return hsvToRgb(hue, saturation, value);\n}\nvoid calculateColor(vec4 data[3], out vec4 result) {\n    result = vec4(0.0);\n    for (int i = 0; i < 3; i++) {\n        vec4 c = data[i];\n        result = mix(result, c, c.a);\n    }\n}\nuniform vec2 u_resolution;\nuniform vec2 u_position;\nuniform float u_brightness;\nuniform float u_btnSize;\nuniform float u_btnStrokeWidth;\nuniform float u_lineStrokeWidth;\nvoid main() {\n    vec2 uv = (gl_FragCoord.xy / u_resolution) * 2.0 - 1.0;\n    vec4 data[3];\n    vec3 strokeColor = vec3(1.0);\n    vec3 rgb = hsvToRgb((atan(uv.y, uv.x)) / FULL_CIRCLE_RADIANS, length(uv), 1.0);\n    float scale = 1.0 - u_btnSize - u_btnStrokeWidth;\n    data[0] = fCircle(uv, rgb, scale, vec2(0.0, 0.0));\n    data[1] = line(uv, vec2(0.0), u_position - u_position * u_btnSize, u_lineStrokeWidth, strokeColor);\n    data[2] = circle(uv, getColorFromPoint(u_position, u_brightness), strokeColor, u_btnStrokeWidth, u_btnSize, u_position * scale);\n    calculateColor(data, gl_FragColor);\n}");
         gl.compileShader(fragmentShader);
         if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
             gl.deleteShader(fragmentShader);
@@ -173,7 +173,7 @@ var ColorPicker = (function () {
             this.gl.uniform1f(tmp, value);
         }
     };
-    ColorPicker.prototype.render = function () {
+    ColorPicker.prototype.install = function () {
         var _this = this;
         var draw = this.drawOneFrame();
         var drawLoop = function () {
@@ -183,10 +183,7 @@ var ColorPicker = (function () {
         drawLoop();
         this.processEvent();
     };
-    ColorPicker.prototype.stopRender = function () {
-        cancelAnimationFrame(this.requestAnimationFrameHandle);
-    };
-    ColorPicker.prototype.unmounted = function () {
+    ColorPicker.prototype.uninstall = function () {
         var _this = this;
         cancelAnimationFrame(this.requestAnimationFrameHandle);
         this.eventManger.forEach(function (event) {
