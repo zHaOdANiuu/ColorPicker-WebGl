@@ -63,7 +63,7 @@ hsb属性是一个数组,包含当前颜色盘所在位置映射的 hsb 值
 设置uniform数据,包含颜色盘的明度信息和按钮大小等
 
 ### install()
-渲染颜色盘,本质是 requestAnimationFrame 的循环调用,事件的注册也在这里,如果是用 Vue 等框架,可以直接在组件挂载时调用 render 方法,在组件销毁时调用 unmounted 方法
+渲染颜色盘,本质是 requestAnimationFrame 的循环调用,事件的注册也在这里,如果是用 Vue 等框架,可以直接在组件挂载时调用 install 方法,在组件销毁时调用 uninstall 方法
 
 ### uninstall()
 调用 cancelAnimationFrame 停止 requestAnimationFrame 并清除事件监听
