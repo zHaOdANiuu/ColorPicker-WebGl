@@ -24,7 +24,7 @@ class ColorPicker {
     this.uniformData = {
       brightness: 1.0,
       btnSize: 0.06667,
-      btnStrokeWidth: 0.005,
+      btnStrokeWidth: 0.008,
       lineStrokeWidth: 0.004
     }
     this.uniformLocation = {
@@ -33,7 +33,7 @@ class ColorPicker {
       btnStrokeWidth: 0,
       lineStrokeWidth: 0
     }
-    const tmp = this.canvas.getContext('webgl')
+    const tmp = this.canvas.getContext('webgl', { antialias: true })
     if (tmp === null) {
       throw new Error('WebGL2 is not supported by your browser')
     }
@@ -93,14 +93,14 @@ vec4 line(vec2 ndc, vec2 sPos, vec2 ePos, float w, vec3 color)
   vec2 perpDir = vec2(-dir.y, dir.x);
   float d = abs(dot(ndc - sPos, perpDir));
   float l = dot(ndc - sPos, dir);
-  float insidePerpendicular = smoothstep(w + 0.001, w - 0.001, d);
+  float insidePerpendicular = smoothstep(w + 0.005, w - 0.005, d);
   float insideSegment = step(l, length(ePos - sPos)) * step(0.0, l);
   float t = insidePerpendicular * insideSegment;
   return mix(vec4(color, t), vec4(0.0), step(t, 0.0));
 }
 vec4 fCircle(vec2 ndc, vec3 color, float radius, vec2 pos)
 {
-  float t = smoothstep(radius, radius - 0.001, length(ndc - pos));
+  float t = smoothstep(radius, radius - 0.01, length(ndc - pos));
   return vec4(color, t);
 }
 vec4 sCircle(vec2 ndc, vec3 color, float radius, float stroke, vec2 pos)
@@ -108,7 +108,7 @@ vec4 sCircle(vec2 ndc, vec3 color, float radius, float stroke, vec2 pos)
   float len = length(ndc - pos);
   float r1 = radius - stroke;
   float r2 = radius + stroke;
-  float t = smoothstep(r1, r1 + 0.001, len) - smoothstep(r2, r2 + 0.001, len);
+  float t = smoothstep(r1, r1 + 0.01, len) - smoothstep(r2, r2 + 0.01, len);
   return mix(vec4(color, t), vec4(0.0), step(t, 0.0));
 }
 vec4 circle(vec2 ndc, vec3 fillColor, vec3 strokeColor, float strokeWidth, float radius, vec2 pos)
@@ -293,7 +293,7 @@ void main() {
       this.gl.uniform1f(tmp, value)
     }
   }
-  public render() {
+  public install() {
     const draw = this.drawOneFrame()
     const drawLoop = () => {
       draw()
@@ -302,10 +302,7 @@ void main() {
     drawLoop()
     this.processEvent()
   }
-  public stopRender() {
-    cancelAnimationFrame(this.requestAnimationFrameHandle)
-  }
-  public unmounted() {
+  public uninstall() {
     cancelAnimationFrame(this.requestAnimationFrameHandle)
     this.eventManger.forEach(event => {
       this.canvas.removeEventListener(event[0], event[1])
