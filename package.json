@@ -1,12 +1,12 @@
 {
   "name": "color-picker-webgl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "基于webgl绘制的颜色选择器,无依赖项,兼容es5,小巧,高效",
   "type": "module",
   "keywords": [
-    "webgl2",
+    "webgl",
     "color picker",
-    "es6",
+    "es5",
     "typescript",
     "javascript",
     "color",
