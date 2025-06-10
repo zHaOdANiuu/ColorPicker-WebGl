@@ -15,11 +15,13 @@ class ColorPicker {
   private eventManger: [string, EventListenerOrEventListenerObject][]
   private selectorPos: Float32Array<ArrayBuffer>
   private scale: number
-  constructor(radius: number) {
+  private _radius: number
+  constructor() {
+    this._radius = 400
     this.canvas = document.createElement('canvas')
-    this.canvas.width = radius
-    this.canvas.height = radius
-    this.canvas.style.width = this.canvas.style.height = radius + 'px'
+    this.canvas.width = 400
+    this.canvas.height = 400
+    this.canvas.style.width = this.canvas.style.height = 400 + 'px'
     this.eventManger = []
     this.uniformData = {
       brightness: 1.0,
@@ -43,6 +45,15 @@ class ColorPicker {
       1.0 - this.uniformData.btnSize - this.uniformData.btnStrokeWidth
     this.selectorPos = new Float32Array(2)
     this.init()
+  }
+  public get radius(){
+    return this._radius
+  }
+  public set radius(val: number){
+    this.canvas.width = val
+    this.canvas.height = val
+    this.canvas.style.width = this.canvas.style.height = val + 'px'
+    this._radius = val
   }
   private get size() {
     return Math.max(this.canvas.width, this.canvas.height) * this.scale
@@ -293,7 +304,8 @@ void main() {
       this.gl.uniform1f(tmp, value)
     }
   }
-  public install() {
+  public install(parent: HTMLElement = document.body) {
+    parent.appendChild(this.canvas)
     const draw = this.drawOneFrame()
     const drawLoop = () => {
       draw()
