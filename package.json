@@ -3,6 +3,12 @@
   "version": "1.0.2",
   "description": "基于webgl绘制的颜色选择器,无依赖项,兼容es5,小巧,高效",
   "type": "module",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "README.md",
+    "package.json"
+  ],
   "keywords": [
     "webgl",
     "color picker",
