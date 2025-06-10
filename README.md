@@ -21,12 +21,12 @@ npm i color-picker-webgl
 <div id="parent" style="display: flex"></div>
 <script type="module">
   import ColorPicker from './index.js';
-  const colorPicker = new ColorPicker(320);
+  const colorPicker = new ColorPicker();
   const parent = document.querySelector('#parent');
   const show = document.querySelector('#show-color');
   const black = document.querySelector('#black');
-  parent.appendChild(colorPicker.canvas);
-  colorPicker.install();
+  colorPicker.radius = 600; // 默认半径为400px
+  colorPicker.install(parent);
   const update = () => {
     const { hsb } = colorPicker
     const rgb = hsbToRgb(hsb[0], hsb[1], hsb[2])
